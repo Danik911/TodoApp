@@ -37,3 +37,6 @@ val Colors.topAppBarContentColor: Color
 val Colors.topAppBarBackgroundColor: Color
     @Composable
     get() = if (isLight) Purple500 else Color.Black
+val Colors.splashScreenBackgroundColor: Color
+    @Composable
+    get() = if (isLight) Purple700 else Color.Black
