@@ -21,12 +21,17 @@ fun ListScreen(
 ) {
     LaunchedEffect(key1 = true) {
         sharedViewModel.getAllTasks()
+        sharedViewModel.readScoreState()
     }
 
     val action by sharedViewModel.action
 
     val allTasks by sharedViewModel.allTasks.collectAsState()
     val searchedTasks by sharedViewModel.searchedTasks.collectAsState()
+    val sortState by sharedViewModel.sortState.collectAsState()
+    val lowPriorityTasks by sharedViewModel.lowPriorityTasks.collectAsState()
+    val highPriorityTasks by sharedViewModel.highPriorityTasks.collectAsState()
+
     val searchAppBarState: SearchAppBarState by sharedViewModel.searchAppBarState
     val searchTextState: String by sharedViewModel.searchTextState
 
@@ -54,7 +59,10 @@ fun ListScreen(
                 allTasks = allTasks,
                 searchedTasks = searchedTasks,
                 searchAppBarState = searchAppBarState,
-                navigateToTaskScreen = navigateToTaskScreen
+                navigateToTaskScreen = navigateToTaskScreen,
+                lowPriorityTasks = lowPriorityTasks,
+                highPriorityTasks = highPriorityTasks,
+                sortState = sortState
             )
         },
         floatingActionButton = {

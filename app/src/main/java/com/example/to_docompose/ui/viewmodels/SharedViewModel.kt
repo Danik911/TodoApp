@@ -14,9 +14,7 @@ import com.example.to_docompose.util.RequestState
 import com.example.to_docompose.util.SearchAppBarState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,6 +38,45 @@ class SharedViewModel @Inject constructor(
     private val _searchedTasks =
         MutableStateFlow<RequestState<List<ToDoTask>>>(RequestState.Idle)
     val searchedTasks: StateFlow<RequestState<List<ToDoTask>>> = _searchedTasks
+
+    private val _sortState =
+        MutableStateFlow<RequestState<Priority>>(RequestState.Idle)
+    val sortState: StateFlow<RequestState<Priority>> = _sortState
+
+    val lowPriorityTasks: StateFlow<List<ToDoTask>> =
+        repository.sortByLowPriority.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
+    val highPriorityTasks: StateFlow<List<ToDoTask>> =
+        repository.sortByHighPriority.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
+
+    fun readScoreState(){
+        _sortState.value = RequestState.Loading
+        try {
+            viewModelScope.launch{
+                dataStoreRepository.readState
+                    .map { Priority.valueOf(it) }
+                    .collect {
+                    _sortState.value = RequestState.Success(it)
+                }
+            }
+        } catch (e: Exception){
+            _sortState.value = RequestState.Error(error = e)
+        }
+    }
+
+
+    fun persistSortState(priority: Priority){
+        viewModelScope.launch(Dispatchers.IO){
+            dataStoreRepository.persistSortState(priority = priority)
+        }
+    }
 
     fun searchDatabase(searchQuery: String) {
         _searchedTasks.value = RequestState.Loading
